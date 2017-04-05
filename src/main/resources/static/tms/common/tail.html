@@ -1,0 +1,39 @@
+<script type="text/javascript">		
+	$(function(){				
+		$("#mapNav").bind("tap", function(e){
+			document.location.href="tracing.html";
+		});
+		$("#mainNav").bind("tap", function(e){
+			document.location.href="main.html";
+		});
+		$("#outNav").bind("tap", function(e){
+			document.location.href="../../index.html";
+		});
+		$("#abNav").bind("tap", function(e){
+			document.location.href="abnormal.html";
+		});
+		$("#"+activeNavName).addClass("mui-active");
+		if(hideAppendNav){
+			$("#appendNav").hide();
+		}
+		if(hideAbNav){
+			$("#abNav").hide();
+		}
+	});
+</script>
+		
+<nav class="mui-bar mui-bar-tab">
+	<a id="mainNav" class="mui-tab-item" href="./main.html">
+		<span class="mui-tab-label">首页</span>
+	</a>
+	<a id="mapNav" class="mui-tab-item" href="./tracing.html">
+		<span class="mui-tab-label">地图</span>
+	</a>
+	<a id="appendNav" class="mui-tab-item" href="javascript:void(0);"></a>
+	<a id="abNav" class="mui-tab-item" href="abnormal.html">
+		<span class="mui-tab-label">异常</span>
+	</a>
+	<a id="outNav" class="mui-tab-item" href="./tracing.html">
+		<span class="mui-tab-label">退出</span>
+	</a>
+</nav>

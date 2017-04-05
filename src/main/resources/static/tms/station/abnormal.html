@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>站点异常画面</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../../css/mui.min.css" rel="stylesheet" />
+		<link href="../../css/surface.css" rel="stylesheet" />
+		<link rel="stylesheet" href="../../css/mui.picker.css" />
+		<link rel="stylesheet" href="../../css/mui.poppicker.css" />
+		<style>
+			
+			h4{
+				margin: 10px;
+			}
+			
+		</style>
+		<script src="../../js/mui.min.js"></script>
+		<script type="text/javascript" src="../../js/mui.picker.js" ></script>
+		<script type="text/javascript" src="../../js/mui.poppicker.js" ></script>
+		<script type="text/javascript" src="../../js/jquery-1.8.3.min.js" ></script>
+		<script type="text/javascript">
+			mui.init()
+			
+			var activeNavName = "abNav";
+			var hideAppendNav = true;
+			var hideAbNav = false;
+			 
+			$(function(){
+				//点击异常确定按钮，委托状态改为运输异常
+				$(".abOK").bind("tap", function(){
+					document.location.href="main.html";
+				});
+				//点击异常取消按钮，委托状态还原成异常之前的状态
+				$(".abCancel").bind("tap", function(){
+					document.location.href="main.html";
+				});
+				
+				$(".abBack").bind("tap", function(){
+					document.location.href="main.html";
+				});
+				
+				$(".codeImage").bind("tap", function(){
+					$(".productInfo").show();
+					$(this).hide();
+				});
+				$(".productClose").bind("tap", function(){
+					mui('.mui-popover').popover("hide", $("#openPopover")[0]);
+				});
+				$(".productOK").bind("tap", function(){
+					$("#productConfirm").html("委托单号：TWLY150401001<br>订单号：HT00004&nbsp;&nbsp;&nbsp;批次：5<br>零件：1234570 &nbsp;&nbsp;&nbsp;包装：S");
+					mui('.mui-popover').popover("hide", $("#openPopover")[0]);
+				});
+				
+				$("#openPopover").bind("tap", function(){
+					$(".productInfo").hide();
+					$(".codeImage").show();
+					mui('.mui-popover').popover("show", this);
+				});
+				
+				$("#tail").load("../common/tail.html");
+				
+			});
+			
+		</script>
+	</head>
+
+	<body>
+		<p id="scan" style="margin-top: 5px;"><a href="javascript:void(0);" id="openPopover" class="mui-btn mui-btn-primary mui-btn-block mui-btn-outlined" style="padding: 5px 20px;">包装扫码</a></p>
+		<p id="productConfirm"></p>
+		<a href="#picture" class="mui-btn mui-btn-primary mui-btn-block mui-btn-outlined" style="padding: 5px 20px;">拍照</a>
+		<textarea id="textarea" rows="5" placeholder="异常说明"></textarea>
+		<div class="mui-text-center">
+			<button type="button" class="mui-btn mui-btn-primary abBack" style="margin-right: 20px;">返回</button>
+			<button type="button" class="mui-btn mui-btn-primary abCancel" style="margin-right: 20px;">取消异常</button>
+			<button type="button" class="mui-btn mui-btn-primary abOK">确定异常</button>
+		</div>
+		
+		<div id="popover" class="mui-popover" style="padding: 10px;">
+			<p class="mui-text-center" style="padding-top: 10px;"><img src="../../img/productCode.png" class="codeImage"/></p>
+			<div class="productInfo">
+			<p>委托单号：TWLY150401001</p>	
+			<p>订单号：HT00004</p>
+			<p>批次：5</p>
+			<p>零件：1234570</p>
+			<p>包装：S</p>
+			<p class="mui-text-center">
+				<button type="button" class="mui-btn mui-btn-primary productClose" style="margin-right: 10px;">关闭</button>
+				<button type="button" class="mui-btn mui-btn-primary productOK">确定</button>
+			</p>
+			</div>
+		</div>
+		
+		<div id="tail"></div>
+	</body>
+
+</html>

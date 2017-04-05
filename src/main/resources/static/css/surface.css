@@ -1,0 +1,23 @@
+#{
+	font-size: 12px;
+	font-family: "微软雅黑";
+	padding: 0;
+	margin: 0;
+}
+
+label{
+	padding: 5px;
+	border-radius: 5px;
+	border-radius: -moz-calc(5px);
+	border-radius: -webkit-calc(5px);
+}
+
+input{
+	border-radius: 5px;
+	border-radius: -moz-calc(5px);
+	border-radius: -webkit-calc(5px);
+}
+
+.div-center{
+	margin: 0 auto;
+}

@@ -15,10 +15,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @SpringBootApplication
 public class App {
 	
-	@ResponseBody
+	/**
+	 * 根目录默认为 /src/main/resources/static
+	 * @ResponseBody 返回plain html
+	 * */
 	@RequestMapping("/")
 	String home(){
-		return "hello world";
+		return "index.html";
 	}
 	
 	/** 这是一个web应用，使用了嵌入式的tomcat

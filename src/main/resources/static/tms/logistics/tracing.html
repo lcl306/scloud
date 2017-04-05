@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	<link href="../../css/mui.min.css" rel="stylesheet" />
+	<link href="../../css/surface.css" rel="stylesheet" />
+	<link rel="stylesheet" href="../../css/map.css" />
+	
+	<script type="text/javascript" src="../../js/jquery-1.8.3.min.js" ></script>
+	<script src="../../js/mui.min.js"></script>
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=3Yz6YMIuZ4jrOTWVmPUd5oDkNKPWELPe"></script>
+	<!-- 加载百度地图样式信息窗口 -->
+	<script type="text/javascript" src="http://api.map.baidu.com/library/SearchInfoWindow/1.5/src/SearchInfoWindow_min.js"></script>
+	<link rel="stylesheet" href="http://api.map.baidu.com/library/SearchInfoWindow/1.5/src/SearchInfoWindow_min.css" />
+	<script type="text/javascript" src="../../js/map.js" ></script>
+	<title>车辆追踪</title>
+
+	<style type="text/css">
+		#l-map {
+			width:100%; 
+			height:100%;
+			overflow: hidden;
+		}
+		
+		.exContainer{
+			z-index:99;
+			font-size:12px;
+			position:absolute;
+			right:10px;
+			bottom:50px;
+			width:120px;
+		}
+	</style>
+</head>
+<body>
+	<div id="l-map"></div>
+	<div class="exContainer">
+		<div class="mui-input-row mui-search">
+		    <input type="search" class="mui-input-clear mui-input-speech" placeholder="城市"
+		    	style="background-color:#F9F9F9">
+		</div>
+	</div>
+	<div id="tail"></div>
+</body>
+</html>
+<script type="text/javascript">
+	//默认定位第三方当前城市中心
+	var map = new BMap.Map("l-map", {enableMapClick:false}); 
+	var point = new BMap.Point(121.481,31.235) ; 
+	map.centerAndZoom(point, 13);
+	map.setCurrentCity("上海");          
+	map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+	
+	//显示和第三方有关的，当前时间站点、车辆的货物信息和数量
+	function getWindowContent(data){
+		var div = $('<div class="infoWinContent">');
+		var list = $('<div class="list">').appendTo(div);
+		var ul = $("<ul>").appendTo(list);
+		$(data).each(function(){
+			var li = $("<li>").appendTo(ul);
+			li.html("委托单号："+this.twNo+"&nbsp;&nbsp;&nbsp;批次："+this.batchNo
+			+"<br/>订单号："+this.orderNo+"&nbsp;&nbsp;&nbsp;零件："+this.productNo
+			+"<br/>包装："+this.packageType+"&nbsp;&nbsp;&nbsp;件数："+this.productNum);
+		});
+		return new BMap.InfoWindow(div[0], {width:200,title:""});
+	}
+	
+	var p1 = addMarker(121.491,31.245,stationIcon,getWindowContent([{twNo:"TWLY150401001",batchNo:"1",orderNo:"HT00004",productNo:"1234571",packageType:"M",productNum:20},
+			{twNo:"TWLY150401021",batchNo:"11",orderNo:"HT00024",productNo:"2234571",packageType:"S",productNum:40}]));
+	var p2 = addMarker(121.479,31.235,carIcon,getWindowContent([{twNo:"TWLY150401002",batchNo:"2",orderNo:"HT00005",productNo:"1234572",packageType:"S",productNum:30}]));
+	var p3 = addMarker(121.471,31.220,carIcon,getWindowContent([{twNo:"TWLY150401003",batchNo:"5",orderNo:"HT00006",productNo:"1234573",packageType:"L",productNum:10}]));
+	
+	//底部菜单
+	var activeNavName = "mapNav";
+	var hideAppendNav = true;
+	var hideAbNav =true;
+	$(function(){
+		$("#tail").load("../common/tail.html");
+	});
+	
+	
+	
+</script>

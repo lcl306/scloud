@@ -1,0 +1,478 @@
+		<link rel="stylesheet" href="../../css/map.css" />
+		<style>	
+			.current{
+				background-color: mintcream
+			}
+			.complete{
+				background-color: #DDDDDD;
+			}
+			.error{
+				background-color: antiquewhite;
+			}
+			.batch_status{
+				font-size: 14px;
+				font-weight: bold;
+			}
+			.bold{
+				font-weight: bold;
+			}
+			.note{
+				font-size: 14px;
+				line-height: 34px;
+			}
+			.v-line{
+				width:3px;
+				border:none;
+				border-top:30px solid #EC971F;
+			}
+			.curSet{
+				padding: 5px;
+				margin-top: 2px;
+			}
+			.abnormal{
+				margin-right: 10px;
+			}
+			.back{
+				color: #F0AD4E;
+				padding-bottom: 5px;
+			}
+			
+			.abpop{
+				position: absolute;
+				left: 10%;
+				top: 20%;
+			}
+			
+			textarea{
+				margin: 0;
+			}
+			#map {
+				width:90%; 
+				height:20%;
+				overflow: hidden;
+			}
+		</style>
+		<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=3Yz6YMIuZ4jrOTWVmPUd5oDkNKPWELPe"></script>
+		<script type="text/javascript" src="../../js/map.js" ></script>
+		<script type="text/javascript">
+			mui.init({
+				pullRefresh : {
+				    container:"#refreshContainer",//刷新容器标识，querySelector能定位的css选择器均可，比如：id、.class等
+				    up : {
+				      height:50,//可选,默认50.触发刷新拖动距离,
+				      auto: false,//可选,默认false.自动刷新一次
+				      contentrefresh : "正在加载...",//可选，正在加载状态时，上拉加载控件上显示的标题内容
+      				  contentnomore:'没有更多数据了',//可选，请求完毕若没有更多数据时显示的提醒内容
+				      callback :function(){
+				      	this.endPullupToRefresh(true); //终止刷新操作，放在ajax callback处理完成后执行,如果没有数据传true，有数据传false
+				      } //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
+				    }
+				}
+			});
+			$(function(){
+				function changeBatchStatus($btn, $batchStatus, paperNum, actNum){
+					var msg = $batchStatus.text()=="未收货"?paperNum==actNum?"收货完成":"收货部分完成":paperNum==actNum?"装箱完成":"装箱部分完成";
+					$batchStatus.text(msg);
+					$btn.hide();
+					$btn.closest("tr").find(".abnormal").hide();
+				}
+				
+				$(".receive").bind("tap", function(){
+					var $this = $(this);
+					var actual = $this.closest("tr").find(".receiveNum").first();
+					var paperNum = $this.closest("tr").find(".paperNum").first().text();
+					var st = $this.closest("tr").find(".batch_status").first();
+					var title = st.text()=="未收货"?"实发件数":"实收件数";
+					mui.prompt('','',title,['取消','确定'],function(e){
+						if(e.index==1){
+							if($.trim(e.value)){
+								actual.text(e.value);					
+								changeBatchStatus($this, st, paperNum, e.value);
+							} 
+						}
+					});
+				});
+				
+				//点击异常确定按钮，批次状态改为异常，委托状态改为运输异常，提交百度地图的地理坐标
+				$(".abOK").bind("tap", function(){
+					var div = document.getElementById("popover");
+					var infos = div.popid.split("_");
+					var st = $("#openPopover_"+infos[1]+"_"+infos[2]).closest("tr").find(".batch_status").first();
+					if(st.text()!='异常') div.origin = st.text();
+					st.text("异常");
+					mui('.mui-popover').popover("hide", $("#openPopover_"+infos[1]+"_"+infos[2])[0]);
+				});
+				//点击异常取消按钮，批次状态和委托状态还原成异常之前的状态
+				$(".abCancel").bind("tap", function(){
+					var div = document.getElementById("popover");
+					var infos = div.popid.split("_");
+					$("#openPopover_"+infos[1]+"_"+infos[2]).closest("tr").find(".batch_status").first().text(div.origin);
+					mui('.mui-popover').popover("hide", $("#openPopover_"+infos[1]+"_"+infos[2])[0]);
+				});
+				
+				$(".abBack").bind("tap", function(){
+					var infos = document.getElementById("popover").popid.split("_");
+					mui('.mui-popover').popover("hide", $("#openPopover_"+infos[1]+"_"+infos[2])[0]);
+				});
+				
+				$(".abnormal").bind("tap", function(){
+					document.getElementById("popover").popid = this.id;
+					console.info(document.getElementById("popover").popid);
+					mui('.mui-popover').popover("show", document); 
+					
+					/*mui.openWindow({
+					    url: '../common/abnormal.html', 
+					    id:'abnormal',
+					    styles:{
+      						top:'10%',//新页面顶部位置
+      						bottom:'10%',//新页面底部位置
+      						width:'80%',//新页面宽度，默认为100%
+      						height:'70%',//新页面高度，默认为100%
+    					},
+    					extras:{
+      						//自定义扩展参数，可以用来处理页面间传值
+    					}
+					});*/
+				});
+				
+				$(".curSet").bind("tap", function(e){
+					var $this = $(this);
+					mui.confirm('委托单号：'+$this.closest("a").find(".note-no").first().text(),'是否接单？',['取消接单','确定接单'],function(e){
+						if(e.index==1){
+							$this.closest("a").find(".twStatus").first().text("运输中");
+							var li = $this.closest("li");
+							li.find(".receive").show();
+							li.find(".abnormal").show();
+							li.addClass("current");
+						}else{
+							$this.closest("a").find(".twStatus").first().text("委托发出");
+							var li = $this.closest("li");
+							li.find(".receive").hide();
+							li.find(".abnormal").hide();
+							li.removeClass("current");
+						}
+					});
+				});
+				
+				$(".twStatus").each(function(){
+					var $this = $(this);
+					if($this.text()=='委托发出'){
+						var li = $this.closest("li");
+						li.find(".receive").hide();
+						li.find(".abnormal").hide();
+					}
+				});
+				
+				if(pageType!="driver"){
+					$(".curSet").hide();
+				}
+				if(pageType=="logistics"){
+					$(".receive").hide();
+					$(".abnormal").hide();
+				}
+			});
+			
+		</script>
+		
+	<!-- 司机画面：列出登录司机所有委托单，站点画面：该站点有关的委托单，第三方：按查询条件列出委托单-->
+	<!-- 默认显示10条，委托单的排序方式：未完成委托单、装箱或收货时间 -->
+	<!-- 批次状态和委托状态改变时，刷新打开的委托单的批次状态、委托状态、收发货按钮显示-->
+	<!-- 每次展开时，重新查询数据-->
+	<div id="refreshContainer" class="mui-content mui-scroll-wrapper">
+  		<div class="mui-scroll">
+ 		<!-- 数据列表 --> 
+		<ul class="mui-table-view"> 
+	        <li class="mui-table-view-cell mui-collapse current">
+	            <a class="mui-navigate-right note" href="#">
+	            	单号：<span class="note-no">TWLY150401001</span>
+            		<span class="mui-badge mui-badge-primary twStatus">运输部分完成</span></a>
+	            <div class="mui-collapse-content">
+	            	<p class="back">沪YH12345&nbsp;&nbsp;王师傅 &nbsp;&nbsp;手机 :12345678901</p>
+	            	<p>上海市 杨浦 <span class="bold">提货点A</span> &nbsp;&nbsp;装箱:2017-3-10 9:00</p>
+                	<hr />
+                	<table>
+                		<tr>
+                			<td width="100%">
+                				<p>零件:1234567&nbsp;&nbsp;包装:S&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-primary mui-badge-inverted batch_status">装箱完成</span></p>
+                				<p>应收件数:<span class="paperNum">50</span>&nbsp;&nbsp;实收件数:<span class="receiveNum">50</span>  </p>
+                				<p>订单号:HT00001&nbsp;&nbsp;批次:2&nbsp;</p>
+                			</td>
+                			<td>
+                				
+                			</td>
+				        </tr>
+	                </table>
+	                <hr />
+	                <table>
+                		<tr>
+                			<td width="100%">
+                				<p>零件:2234567&nbsp;&nbsp;包装:M&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-primary mui-badge-inverted batch_status">待装箱</span></p>
+                				<p>应收件数:<span class="paperNum">30</span>&nbsp;&nbsp;实收件数:<span class="receiveNum"></span>  </p>
+                			</td>
+                			<td>
+                				<!-- 只有委托单状态是运输中、运输部分完成、收货部分完成时,批次状态为待装箱和未收货时，才显示异常按钮-->
+                				<a id="openPopover_1_2" class="mui-btn mui-btn-danger abnormal">异常</a>
+                			</td>
+                			<td>
+                				<!-- 点击确认后，批次状态、批次数量、委托数量发生相应变化，状态变化参考“需求补足说明”中的“状态迁移” -->
+                				<!-- 只有委托单状态是运输中、部分收货完成、收货完成时,批次状态为待装箱和未收货时，才显示收货或发货按钮->
+                				<!-- 如果实收件数，或实发件数为空白或0时，不改变状态-->
+                				<button type="button" class="mui-btn mui-btn-warning receive">收货</button>
+                			</td>
+				        </tr>
+	                </table>
+	                <hr/>
+                	<table>
+                		<tr>
+                			<td width="100%">
+                				<p>箱号:123&nbsp;&nbsp;封号:XSE&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-success mui-badge-inverted batch_status">收货完成</span></p>
+                				<p>应发件数:<span class="paperNum">1</span>&nbsp;&nbsp;实发件数:<span class="receiveNum">1</span>  </p>
+                				<!--<p>单号:HT00001&nbsp;&nbsp;批次:2&nbsp;</p>-->
+                			</td>
+                			<td>
+                				
+                			</td>
+				        </tr>
+	                </table>
+	                <div class="mui-text-center"><img src="../../img/arr_down.png" width="30px" height="50px" /></div>
+
+	                <p>上海市 虹口 <span class="bold">提货点B</span> &nbsp;&nbsp;装箱:2017-3-10 12:00</p>
+                	<hr />
+                	<table>
+                		<tr>
+                			<td width="100%">
+                				<p>零件:1234568&nbsp;&nbsp;包装:L&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-primary mui-badge-inverted batch_status">待装箱</span></p>
+                				<p>应收件数:<span class="paperNum">10</span>&nbsp;&nbsp;实收件数:<span class="receiveNum"></span>  </p>
+                				<!--<p>单号:HT00001&nbsp;&nbsp;批次:2&nbsp;</p>-->
+                			</td>
+                			<td>
+                				<a id="openPopover_1_4" class="mui-btn mui-btn-danger abnormal">异常</a>
+                			</td>
+                			<td>
+                				<button type="button" class="mui-btn mui-btn-warning receive">收货</button>
+                			</td>
+				        </tr>
+	                </table>
+	                <hr />
+	                <table>
+                		<tr>
+                			<td width="100%">
+                				<p>零件:2234567&nbsp;&nbsp;包装:M&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-success mui-badge-inverted batch_status">未收货</span></p>
+                				<p>应发件数:<span class="paperNum">30</span>&nbsp;&nbsp;实发件数:<span class="receiveNum"></span>  </p>
+                				<!--<p>单号:HT00001&nbsp;&nbsp;批次:2&nbsp;</p>-->
+                			</td>
+                			<td>
+                				<a id="openPopover_1_5" class="mui-btn mui-btn-danger abnormal">异常</a>
+                			</td>
+                			<td>
+                				<button type="button" class="mui-btn mui-btn-warning receive">发货</button>
+                			</td>
+				        </tr>
+	                </table>
+	                <div class="mui-text-center"><img src="../../img/arr_down.png" width="30px" height="50px" /></div>
+	                
+	                <p>上海市 浦东&nbsp;<span class="bold">提货点C</span> &nbsp;&nbsp;到达:2017-3-10 15:00</p>
+                	<hr />
+                	<table>
+                		<tr>
+                			<td width="100%">
+                				<p>零件:1234567&nbsp;&nbsp;包装:S&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-success mui-badge-inverted batch_status">未收货</span></p>
+                				<p>应发件数:<span class="paperNum">50</span>&nbsp;&nbsp;实发件数:<span class="receiveNum"></span>  </p>
+                				<!--<p>单号:HT00001&nbsp;&nbsp;批次:2&nbsp;</p>-->
+                			</td>
+                			<td>
+                				<a id="openPopover_1_6" class="mui-btn mui-btn-danger abnormal">异常</a>
+                			</td>
+                			<td>
+                				<button type="button" class="mui-btn mui-btn-warning receive">发货</button>
+                			</td>
+				        </tr>
+	                </table>
+	                <hr />
+                	<table>
+                		<tr>
+                			<td width="90%">
+                				<p>零件:1234568&nbsp;&nbsp;包装:L&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-success mui-badge-inverted batch_status">未收货</span></p>
+                				<p>应发件数:<span class="paperNum">10</span>&nbsp;&nbsp;实发件数:<span class="receiveNum"></span>  </p>
+                				<!--<p>单号:HT00001&nbsp;&nbsp;批次:2&nbsp;</p>-->
+                			</td>
+                			<td>
+                				<a id="openPopover_1_7" class="mui-btn mui-btn-danger abnormal">异常</a>
+                			</td>
+                			<td>
+                				<button type="button" class="mui-btn mui-btn-warning receive">发货</button>
+                			</td>
+				        </tr>
+	                </table>
+	            </div>
+	        </li>
+	        
+	        <li class="mui-table-view-cell mui-collapse">
+	            <a class="mui-navigate-right note" href="#">
+	            	<!-- 只有委托发出、运输中时，才显示接单按钮 --> 
+	            	<button type="button" class="mui-btn-warning curSet">接单</button>
+	            	单号：<span class="note-no">TWLY150401002</span>
+            		<span class="mui-badge mui-badge-primary twStatus">委托发出</span></a>
+	            <div class="mui-collapse-content">
+	            	<p>上海市 浦东&nbsp;<span class="bold">提货点C</span>&nbsp;&nbsp;装箱:2017-3-10 15:00</p>
+                	<hr />
+                	<table>
+                		<tr>
+                			<td width="100%">
+                				<p>零件:1234570&nbsp;&nbsp;包装:S&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-primary mui-badge-inverted batch_status">待装箱</span></p>
+                				<p>应收件数:<span class="paperNum">30</span>&nbsp;&nbsp;实收件数:<span class="receiveNum"></span>  </p>
+                				<!--<p>单号:HT00001&nbsp;&nbsp;批次:2&nbsp;</p>-->
+                			</td>
+                			<td>
+                				<a id="openPopover_2_1" class="mui-btn mui-btn-danger abnormal">异常</a>
+                			</td>
+                			<td>
+                				<button type="button" class="mui-btn mui-btn-warning receive">收货</button>
+                			</td>
+				        </tr>
+	                </table>
+	                <div class="mui-text-center"><img src="../../img/arr_down.png" width="30px" height="50px" /></div>
+	                
+	                <p>上海市 杨浦<span class="bold">提货点A</span> &nbsp;&nbsp;到达:2017-3-10 15:00</p>
+                	<hr />
+                	<table>
+                		<tr>
+                			<td width="100%">
+                				<p>零件:1234570&nbsp;&nbsp;包装:S&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-success mui-badge-inverted batch_status">待收货</span></p>
+                				<p>应发件数:<span class="paperNum">30</span>&nbsp;&nbsp;实发件数:<span class="receiveNum"></span>  </p>
+                				<!--<p>单号:HT00001&nbsp;&nbsp;批次:2&nbsp;</p>-->
+                			</td>
+                			<td>
+                				<a id="openPopover_2_2" class="mui-btn mui-btn-danger abnormal">异常</a>
+                			</td>
+                			<td>
+                				<button type="button" class="mui-btn mui-btn-warning receive">收货</button>
+                			</td>
+				        </tr>
+	                </table>
+	            </div>
+	            
+	            <li class="mui-table-view-cell mui-collapse error">
+	            <a class="mui-navigate-right note" href="#">
+	            	单号：<span class="note-no">TWLY150401003</span>
+            		<span class="mui-badge mui-badge-primary twStatus">运输异常</span></a>
+	            <div class="mui-collapse-content">
+	            	<p class="back">沪YH12345&nbsp;&nbsp;王师傅 &nbsp;&nbsp;手机 :12345678901</p>
+	            	<p>上海市 浦东&nbsp;<span class="bold">提货点C</span> &nbsp;&nbsp;装箱:2017-3-10 15:00</p>
+                	<hr />
+                	<table>
+                		<tr>
+                			<td width="100%">
+                				<p>零件:1234570&nbsp;&nbsp;包装:S&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-primary mui-badge-inverted batch_status">装箱完成</span></p>
+                				<p>应收件数:<span class="paperNum">30</span>&nbsp;&nbsp;实收件数:<span class="receiveNum">30</span>  </p>
+                				<!--<p>单号:HT00001&nbsp;&nbsp;批次:2&nbsp;</p>-->
+                			</td>
+                			<td>
+                				&nbsp;
+                			</td>
+				        </tr>
+	                </table>
+	                <div class="mui-text-center"><img src="../../img/arr_down.png" width="30px" height="50px" /></div>
+	                
+	                <p class="mui-text-center"><span class="mui-badge mui-badge-primary mui-badge-inverted batch_status">异常</span></p>
+	                <p>异常原因，异常原因，异常原因，异常原因，异常原因，异常原因，异常原因，异常原因，</p>
+	                <p class="mui-card-header mui-card-media" style="height:40vw;background-image:url(../../img/driverError.jpg)"></p>
+	                <p id="l-map"></p>
+	                
+	                <div class="mui-text-center"><img src="../../img/arr_down.png" width="30px" height="50px" /></div>
+	                
+	                <p>上海市 杨浦<span class="bold">提货点A</span> &nbsp;&nbsp;到达:2017-3-10 15:00</p>
+                	<hr />
+                	<table>
+                		<tr>
+                			<td width="100%">
+                				<p>零件:1234570&nbsp;&nbsp;包装:S&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-success mui-badge-inverted batch_status">待收货</span></p>
+                				<p>应发件数:<span class="paperNum">30</span>&nbsp;&nbsp;实发件数:<span class="receiveNum"></span>  </p>
+                				<!--<p>单号:HT00001&nbsp;&nbsp;批次:2&nbsp;</p>-->
+                			</td>
+                			<td>
+                				<a id="openPopover_3_2" class="mui-btn mui-btn-danger abnormal">异常</a>
+                			</td>
+                			<td>
+                				&nbsp;
+                			</td>
+				        </tr>
+	                </table>
+	            </div>
+	        </li>
+	        
+	        <li class="mui-table-view-cell mui-collapse complete">
+	            <a class="mui-navigate-right note" href="#">
+	            	单号：<span class="note-no">TWLY150401003</span>
+            		<span class="mui-badge mui-badge-primary">收货完成</span></a>
+	            <div class="mui-collapse-content">
+	            	<p class="back">沪YH12345&nbsp;&nbsp;王师傅 &nbsp;&nbsp;手机 :12345678901</p>
+	            	<p>上海市 浦东&nbsp;<span class="bold">提货点C</span> &nbsp;&nbsp;装箱:2017-3-10 15:00</p>
+                	<hr />
+                	<table>
+                		<tr>
+                			<td width="100%">
+                				<p>零件:1234570&nbsp;&nbsp;包装:S&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-primary mui-badge-inverted batch_status">装箱完成</span></p>
+                				<p>应发件数:<span class="paperNum">30</span>&nbsp;&nbsp;实发件数:<span class="receiveNum">30</span>  </p>
+                				<!--<p>单号:HT00001&nbsp;&nbsp;批次:2&nbsp;</p>-->
+                			</td>
+                			<td>
+                				&nbsp;
+                			</td>
+				        </tr>
+	                </table>
+	                <div class="mui-text-center"><img src="../../img/arr_down.png" width="30px" height="50px" /></div>
+	                
+	                <p class="back">沪YH12346&nbsp;&nbsp;张师傅 &nbsp;&nbsp;手机 :12345678902</p>
+	                <p>上海市 杨浦<span class="bold">&nbsp;提货点A</span> &nbsp;&nbsp;到达:2017-3-10 15:00</p>
+                	<hr />
+                	<table>
+                		<tr>
+                			<td width="100%">
+                				<p>零件:1234570&nbsp;&nbsp;包装:S&nbsp;&nbsp;
+                				<span class="mui-badge mui-badge-success mui-badge-inverted batch_status">收货完成</span></p>
+                				<p>应收件数:<span class="paperNum">30</span>&nbsp;&nbsp;实收件数:<span class="receiveNum">30</span>  </p>
+                				<!--<p>单号:HT00001&nbsp;&nbsp;批次:2&nbsp;</p>-->
+                			</td>
+                			<td>
+                				
+                			</td>
+                			<td>
+                				&nbsp;
+                			</td>
+				        </tr>
+	                </table>
+	            </div>
+	        </li>
+	            
+	    </ul>
+	    </div>
+	</div>
+	
+		<!--
+        	异常弹出框
+        -->
+		<div id="popover" class="mui-popover abpop" style="padding: 10px;">
+			<p>订单号：HT00002&nbsp;&nbsp;&nbsp;批次：3</p>
+			<p>零件：2234567&nbsp;&nbsp;&nbsp;包装：M</p>
+			<a href="#picture" class="mui-btn mui-btn-primary mui-btn-block mui-btn-outlined" style="padding: 5px 20px;">拍照</a>
+			<textarea id="textarea" rows="3" placeholder="异常说明"></textarea>
+			<p class="mui-text-center">
+				<button type="button" class="mui-btn mui-btn-primary abBack" style="margin-right: 10px;">关闭</button>
+				<button type="button" class="mui-btn mui-btn-primary abCancel" style="margin-right: 10px;">取消异常</button>
+				<button type="button" class="mui-btn mui-btn-primary abOK">确定异常</button>
+			</p>
+			<p id="map" class="div-center" style="margin-bottom: 10px;"></p>
+		</div>

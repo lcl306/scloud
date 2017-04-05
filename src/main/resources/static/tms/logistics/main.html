@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>站点主画面</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../../css/mui.min.css" rel="stylesheet" />
+		<link href="../../css/surface.css" rel="stylesheet" />
+		<style>
+			
+		</style>
+		<script src="../../js/mui.min.js"></script>
+		<script type="text/javascript" src="../../js/jquery-1.8.3.min.js" ></script>
+		<script type="text/javascript">
+			mui.init({
+			    subpages:[{
+			      url:'list.html',
+			      id:'list.html',
+			      styles:{
+			        top:'100px',
+			        bottom:'60px'
+			      },
+			      extras:{
+			      	pageType: "logistics"
+			      }
+			    }]
+			});
+			
+			var activeNavName = "mainNav";
+			var hideAppendNav = true;
+			var hideAbNav = true;
+			$(function(){
+				$("#tail").load("../common/tail.html");
+			});
+			
+		</script>
+	</head>
+
+	<body>
+		<div style="margin-top: 5px;">
+			<table>
+				<tr>
+					<td>
+						<div class="mui-input-row mui-search" style="margin-left:5px;margin-right: 5px;">
+						    <input type="search" size="24" class="mui-input-clear mui-input-speech" placeholder="站点名称">
+						</div>
+					</td>
+					<td>
+						<div class="mui-input-row mui-search" style="margin-right: 5px;">
+						    <input type="search" class="mui-input-clear mui-input-speech" placeholder="司机手机号">
+						</div>
+					</td>
+				</tr>
+				<div class="mui-input-row mui-search" style="margin-left:5px;margin-right: 5px;">
+					<input type="search" class="mui-input-clear mui-input-speech" placeholder="委托单号">
+				</div>
+			</table>
+		</div>
+		
+		<div id="tail"></div>
+	</body>
+
+</html>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>站点主画面</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../../css/mui.min.css" rel="stylesheet" />
+		<link href="../../css/surface.css" rel="stylesheet" />
+		<link rel="stylesheet" href="../../css/icons-extra.css" />
+		<style>
+			
+		</style>
+		<script src="../../js/mui.min.js"></script>
+		<script type="text/javascript" src="../../js/jquery-1.8.3.min.js" ></script>
+		<script type="text/javascript" scr="../../js/scan.js"></script>
+		<script type="text/javascript">
+			mui.init({
+			    subpages:[{
+			      url:'list.html',
+			      id:'list.html',
+			      styles:{
+			        top:'100px',
+			        bottom:'60px'
+			      },
+			      extras:{
+			      	pageType: 'driver'
+			      }
+			    }]
+			});
+			
+			var scanOver = document.getElementById("scanOver");
+			var activeNavName = "mainNav";
+			var hideAppendNav = false;
+			var hideAbNav = false;
+			$(function(){
+				$("#tail").load("../common/tail.html");
+				$("#circleDiv").load("../common/scan.html");
+			});
+			
+		</script>
+	</head>
+
+	<body>
+		<div style="margin-top: 5px;">
+		<!-- 通过模糊查询，可以在下拉框中显示出来 -->
+		<div class="mui-input-row mui-search">
+		    <input type="search" class="mui-input-clear mui-input-speech" placeholder="司机手机号">
+		</div>
+		<div class="mui-input-row mui-search">
+		    <input type="search" class="mui-input-clear mui-input-speech" placeholder="委托单号">
+		</div>
+		</div>
+		<div id="scanOver"></div>
+		<div id="tail"></div>
+		<div id="circleDiv"></div>
+		
+		
+	</body>
+
+</html>
