@@ -1,0 +1,39 @@
+.circle {
+	position: fixed;
+	text-align: center;
+	margin-left: calc((100% - 65px)/2);
+	bottom: 5px;
+	width: 65px;
+	height: 65px;
+	border-radius: 50px;
+	background: rgba(100, 177, 245, 1.0);
+	z-index: 99;
+}
+.tab-center {
+	display: table-cell;
+	overflow: hidden;
+	width: 1%;
+	height: 50px;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.mtop{
+   	margin-top: 10px;
+}
+
+.pleft{
+	padding-left:5px;
+}
+
+.ptop{
+	padding-top:10px;
+}
+
+.mright{
+	margin-right: 10px;
+}
+
+.widthNum{
+	width: 160px;
+}
