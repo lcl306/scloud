@@ -48,6 +48,9 @@ public class TcpStrClientHandler extends ChannelInboundHandlerAdapter {
 		}
     }
     
+    /**
+     * 每一次接收消息，都会触发readComplete
+     * */
     @Override
 	public void channelReadComplete(ChannelHandlerContext ctx){
     	TcpStrClientHandler.logger.info("super.channelReadComplete(ChannelHandlerContext ctx)="+ctx.toString());

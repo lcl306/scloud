@@ -1,5 +1,7 @@
 package com.it.netty.base;
 
+import com.it.netty.util.GlobalName;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -20,6 +22,7 @@ public class TcpClient {
             b.group(workerGroup);
             b.channel(NioSocketChannel.class);
             b.option(ChannelOption.AUTO_READ, true);
+            //b.option(ChannelOption.TCP_NODELAY, true);
             b.handler(ci);
             ChannelFuture f = b.connect(GlobalName.IP, GlobalName.PORT).sync();
             c =f.channel();

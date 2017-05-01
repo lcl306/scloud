@@ -8,6 +8,8 @@ import io.netty.util.AttributeKey;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.it.netty.util.BufUtil;
+
 public class TcpStrServerHandler extends ChannelInboundHandlerAdapter {
 	
 	static final String ATTR_KEY_NAME = "content";
@@ -75,12 +77,12 @@ public class TcpStrServerHandler extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelReadComplete(ChannelHandlerContext ctx){
 		TcpStrServerHandler.logger.info("super.channelReadComplete(ChannelHandlerContext ctx)="+ctx.toString());
-		String contentStr = StringUtil.buf2str(getContent(ctx));
+		String contentStr = BufUtil.buf2str(getContent(ctx));
 		if(contentStr.indexOf(OVER_FLAG)==-1){  //说明还没完
 			return;
 		}
 		clearContent(ctx);
-		ctx.write(StringUtil.str2buf(contentStr));
+		ctx.write(BufUtil.str2buf(contentStr));
 		ctx.flush();
 	    //ctx.writeAndFlush(contentStr);
 		/*ByteBuf buf = ctx.alloc().buffer(1024);

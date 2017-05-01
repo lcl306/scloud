@@ -4,10 +4,13 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.nio.channels.spi.SelectorProvider;
@@ -15,11 +18,15 @@ import java.util.concurrent.ThreadFactory;
 
 import org.apache.log4j.BasicConfigurator;
 
+import com.it.netty.util.GlobalName;
+
 public class TcpServer {
 	
 	static final String WORK_POOL_NAME = "work-thread-pool";
 	
 	//static final String SERVER_IP = "0.0.0.0";
+	
+	static final int OPTION_PORT = 128;
 
 	static{
 		BasicConfigurator.configure();
@@ -41,19 +48,19 @@ public class TcpServer {
 					
 			//设置channel类型
 			serverBootstrap.channel(NioServerSocketChannel.class);
+			serverBootstrap.option(ChannelOption.SO_BACKLOG, OPTION_PORT);
+			serverBootstrap.handler(new LoggingHandler(LogLevel.INFO));
+			//socket是否KEEPALIVE
+			//serverBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
 			//通过水管，即pipeline设置拦截器即handler
 			serverBootstrap.childHandler(ci);
-					
-			//设置netty服务器绑定的ip端口
-			//serverBootstrap.option(ChannelOption.SO_BACKLOG, OPTION_PORT);
-			//serverBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
-			//启动server
+			//设置绑定的端口,启动server
 			ChannelFuture f = serverBootstrap.bind(GlobalName.PORT).sync();
 			//wait至server socket close
 		    c = f.channel();
 		    c.closeFuture().sync();
-			//serverBootstrap.bind(new InetSocketAddress(SERVER_IP, SERVER_PORT));
-			//serverBootstrap.bind(new InetSocketAddress(SERVER_IP, 86); //还可以监听多个端口
+			////serverBootstrap.bind(new InetSocketAddress(SERVER_IP, SERVER_PORT));
+			////serverBootstrap.bind(new InetSocketAddress(SERVER_IP, 86); //还可以监听多个端口
 		} catch (InterruptedException e){
 			e.printStackTrace();
 		}finally{

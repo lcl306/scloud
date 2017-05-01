@@ -19,9 +19,10 @@ public class App {
 	 * 根目录默认为 /src/main/resources/static
 	 * @ResponseBody 返回plain html
 	 * */
+	@ResponseBody
 	@RequestMapping("/")
 	String home(){
-		return "index.html";
+		return "hello everyone";
 	}
 	
 	/** 这是一个web应用，使用了嵌入式的tomcat
