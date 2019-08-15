@@ -22,7 +22,7 @@ public class App {
 	@ResponseBody
 	@RequestMapping("/")
 	String home(){
-		return "hello everyone";
+		return "hello everyone222";
 	}
 	
 	/** 这是一个web应用，使用了嵌入式的tomcat
