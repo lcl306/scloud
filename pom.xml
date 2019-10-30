@@ -41,7 +41,7 @@
   	<dependency>
 	  <groupId>io.netty</groupId>
 	  <artifactId>netty-all</artifactId> <!-- Use 'netty' for 3.X or below, and Use 'netty-all' for 4.0 or above -->
-	  <version>4.1.9.Final</version>
+	  <version>4.1.42.Final</version>
 	</dependency>
 	
 	<dependency>
